@@ -11,15 +11,18 @@ public class App {
         
         ISplitwiseService splitwiseService = new SplitwiseService();
         
-        // splitwiseService.GetCompleteDebt();
-        // splitwiseService.GetDebtByUserId(user1);
-        splitwiseService.CreateSplitBill(user1, Arrays.asList(user2) , SplitType.SPLIT_TYPE_EQUAL, 1000.0f, null);
-        splitwiseService.CreateSplitBill(user2, Arrays.asList(user3) , SplitType.SPLIT_TYPE_EQUAL, 1000.0f, null);
-        splitwiseService.CreateSplitBill(user3, Arrays.asList(user1) , SplitType.SPLIT_TYPE_EQUAL, 1000.0f, null);
+        splitwiseService.createSplitBill(user2, Arrays.asList(user1) , SplitType.SPLIT_TYPE_EQUAL, 200.0f, null);
+        splitwiseService.createSplitBill(user4, Arrays.asList(user3) , SplitType.SPLIT_TYPE_EQUAL, 400.0f, null);
+        splitwiseService.createSplitBill(user2, Arrays.asList(user4) , SplitType.SPLIT_TYPE_EQUAL, 200.0f, null);
+        splitwiseService.getCompleteDebt();
+        // splitwiseService.createSplitBill(user3, Arrays.asList(user2) , SplitType.SPLIT_TYPE_EQUAL, 1000.0f, null);
+        // splitwiseService.getCompleteDebt();
+
+
+        // splitwiseService.createSplitBill(user4, Arrays.asList(user2) , SplitType.SPLIT_TYPE_EQUAL, 200.0f, null);
         // splitwiseService.GetDebtByUserId(user4);
         // splitwiseService.GetDebtByUserId(user1);
         // splitwiseService.CreateSplitBill(user1, Arrays.asList(user2, user3) , SplitType.SPLIT_TYPE_EXACT, 1250.0f, Arrays.asList(370.0f, 880.0f));
-        splitwiseService.GetCompleteDebt();
         // splitwiseService.GetDebtByUserId(user1);
     }
 }

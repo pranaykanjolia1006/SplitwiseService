@@ -1,3 +1,4 @@
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,20 +39,27 @@ public class SplitwiseService implements ISplitwiseService{
     }
 
     private List<Pair<User, Float>> getUsersBalanceBySign(int sign) {
-        
+
+//        for (Map.Entry<User, List<Debt>> userDebtEntry : usersToDebtList.entrySet()) {
+//            System.out.println("Key:" + userDebtEntry.getKey().getName());
+//            for (Debt debt : userDebtEntry.getValue()) {
+//                System.out.println(debt.getOwesTo().getName() + " owes to " + debt.getOwedTo().getName() + ": " + debt.getAmount());
+//            }
+//        }
+//        System.out.println("sbhsbuhbaubbauinsibybsyubausb");
         List<Pair<User, Float>> usersBalance = new ArrayList<>();
 
         for (Map.Entry<User, List<Debt>> userDebtEntry : usersToDebtList.entrySet()) {
-            Float totalAmount = Float.valueOf(0.0f);
+            Float totalAmount = 0.0f;
             for (Debt debt : userDebtEntry.getValue()) {
-                if (sign > 0 && debt.getOwedTo().equals(userDebtEntry.getKey())) {
+                if (debt.getOwedTo().equals(userDebtEntry.getKey())) {
                     totalAmount += debt.getAmount();
-                } else if (sign < 0 && debt.getOwesTo().equals(userDebtEntry.getKey())) {
-                    totalAmount += debt.getAmount();
+                } else if (debt.getOwesTo().equals(userDebtEntry.getKey())) {
+                    totalAmount -= debt.getAmount();
                 }
             }
             if (totalAmount * sign > 0) {
-                usersBalance.add(new Pair(userDebtEntry.getKey(), totalAmount));
+                usersBalance.add(new Pair<>(userDebtEntry.getKey(), Math.abs(totalAmount)));
             }
         }
 
@@ -69,28 +77,34 @@ public class SplitwiseService implements ISplitwiseService{
 
             for ( int j=0;j<negativeBalanceUsers.size();j++) {
                 User userWithNegAmt = negativeBalanceUsers.get(j).getKey();
-                Float negAmt = negativeBalanceUsers.get(i).getValue();
+                Float negAmt = negativeBalanceUsers.get(j).getValue();
                 
-                if (negAmt == 0 || posAmt < negAmt) {
+                if (negAmt == 0) {
                     continue;
                 }
 
-                Float tempPosAmt = Float.valueOf(posAmt);
-                Float tempNegAmt = Float.valueOf(negAmt);
+                Float tempPosAmt = posAmt;
+                Float tempNegAmt = negAmt;
                 
-                posAmt = posAmt - negAmt;
-                negAmt = 0f;
+                posAmt = Math.max(tempPosAmt - tempNegAmt,0f);
+                negAmt = Math.max(tempNegAmt - tempPosAmt,0f);
+                positiveBalanceUsers.get(i).setValue(posAmt);
+                negativeBalanceUsers.get(j).setValue(negAmt);
 
                 List<Debt> simplifiedBalanceList = getSimplifiedBalanceList(positiveBalanceUsers, negativeBalanceUsers);
-                if (minTransactions == null || minTransactions.size() > simplifiedBalanceList.size() + 1) {
-                    minTransactions = simplifiedBalanceList;                    
-                    minTransactions.add(new Debt(userWithNegAmt, userWithPosAmt, Float.valueOf(tempNegAmt)));
+                if (simplifiedBalanceList == null) {
+                    simplifiedBalanceList = new ArrayList<>();
+                }
+                simplifiedBalanceList.add(new Debt(userWithNegAmt, userWithPosAmt, tempNegAmt));
+                if (minTransactions == null || minTransactions.size() > simplifiedBalanceList.size()) {
+                    minTransactions = simplifiedBalanceList;
                 }
 
-                posAmt = tempPosAmt;
-                negAmt = tempNegAmt;
+                positiveBalanceUsers.get(i).setValue(tempPosAmt);
+                negativeBalanceUsers.get(j).setValue(tempNegAmt);
             }
         }
+
         return minTransactions;
     }
 
@@ -98,7 +112,20 @@ public class SplitwiseService implements ISplitwiseService{
         List<Pair<User, Float>> positiveBalanceUsers = getUsersBalanceBySign(1);
         List<Pair<User, Float>> negativeBalanceUsers = getUsersBalanceBySign(-1);
 
+        System.out.println("Positive balance users:" + positiveBalanceUsers.size());
+        positiveBalanceUsers.forEach(p -> {
+            System.out.println(p.getKey().getName());
+            System.out.println(p.getValue());
+        });
+        System.out.println("Negative balance users:" + negativeBalanceUsers.size());
+        negativeBalanceUsers.forEach(p -> {
+            System.out.println(p.getKey().getName());
+            System.out.println(p.getValue());
+        });
+
+
         List<Debt> simplifiedDebts = getSimplifiedBalanceList(positiveBalanceUsers, negativeBalanceUsers);
+        System.out.println("simplifyDebts:" + simplifiedDebts.size());
 
         usersToDebtList = new HashMap<>();
         for (Debt debt : simplifiedDebts) {
@@ -139,7 +166,10 @@ public class SplitwiseService implements ISplitwiseService{
                 break;
         }
 
+//        simplifyDebts();
+//        getCompleteDebt();
         simplifyDebts();
+        getCompleteDebt();
         return;
     }
 
@@ -147,8 +177,8 @@ public class SplitwiseService implements ISplitwiseService{
 
         List<Debt> paidForUserDebtList = usersToDebtList.get(paidForUser);
 
-        boolean debtNotFound = false;
-        for (int i=0; i < paidForUserDebtList.size() && !debtNotFound; i++) {
+        boolean debtFound = false;
+        for (int i=0; i < paidForUserDebtList.size() && !debtFound; i++) {
 
             Debt debt = paidForUserDebtList.get(i);
             User owedTo = paidForUserDebtList.get(i).getOwedTo(); 
@@ -156,9 +186,9 @@ public class SplitwiseService implements ISplitwiseService{
 
             if (owedTo.equals(paidByUser)) {
                 debt.setAmount(debt.getAmount() + amount);
-                debtNotFound = true;
+                debtFound = true;
             } else if (owesTo.equals(paidByUser)) {
-                debtNotFound = true;
+                debtFound = true;
                 Float splitAmount = debt.getAmount() - amount;
                 if (splitAmount < 0) {
                     debt.setOwedTo(owesTo);
@@ -168,7 +198,7 @@ public class SplitwiseService implements ISplitwiseService{
             }
         }
 
-        if (!debtNotFound) {
+        if (!debtFound) {
             Debt newDebt = new Debt(paidForUser, paidByUser, amount);
             usersToDebtList.get(paidByUser).add(newDebt);
             paidForUserDebtList.add(newDebt);
@@ -210,16 +240,18 @@ public class SplitwiseService implements ISplitwiseService{
         Set<Debt> debtSet = new HashSet<>();
 
         for (List<Debt> debtList: usersToDebtList.values()) {
-            debtSet.addAll(debtList.stream().collect(Collectors.toSet()));
+            debtSet.addAll(new HashSet<>(debtList));
         }
 
-        if (debtSet.size() == 0) {
+        if (debtSet.isEmpty()) {
             System.out.println("No balances");
             return;
         }
+        System.out.println("Total balances: " + debtSet.size());
         for (Debt debt: debtSet) {
             System.out.println(debt.getOwesTo().getName() + " owes to " + debt.getOwedTo().getName() + ": " + debt.getAmount());
         }
+        System.out.println("**********************");
     }
 
     @Override
@@ -227,13 +259,13 @@ public class SplitwiseService implements ISplitwiseService{
         Set<Debt> debtSet = new HashSet<>();
 
         List<Debt> userDebtList = usersToDebtList.get(user);
-        if (userDebtList == null || userDebtList.size() == 0) {
+        if (userDebtList == null || userDebtList.isEmpty()) {
             System.out.println("No balances");
             return;
         }
 
-        debtSet.addAll(userDebtList.stream().collect(Collectors.toSet()));
-        if (debtSet.size() == 0) {
+        debtSet.addAll(new HashSet<>(userDebtList));
+        if (debtSet.isEmpty()) {
             System.out.println("No balances");
             return;
         }
@@ -241,6 +273,8 @@ public class SplitwiseService implements ISplitwiseService{
         for (Debt debt: debtSet) {
             System.out.println(debt.getOwesTo().getName() + " owes to " + debt.getOwedTo().getName() + ": " + debt.getAmount());
         }
+        System.out.println("**********************");
+
     }
     
 }
