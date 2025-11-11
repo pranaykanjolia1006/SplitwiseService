@@ -1,3 +1,5 @@
+package service.splitwise.domain;
+
 public class Debt {
 
     private User owesTo; // gives the money

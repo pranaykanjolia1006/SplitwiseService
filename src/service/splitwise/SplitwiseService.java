@@ -1,41 +1,17 @@
-import java.sql.SQLOutput;
+import common.domain.Pair;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class SplitwiseService implements ISplitwiseService{
 
     private HashMap<User, List<Debt>> usersToDebtList;
     public SplitwiseService() {
         this.usersToDebtList = new HashMap<>();
-    }
-
-    // TODO CLEAN THIS
-    class Pair<K, V> {
-        private K key;
-        private V value;
-
-        public Pair(K key , V value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public K getKey() {
-            return key;
-        }
-        public void setKey(K key) {
-            this.key = key;
-        }
-        public V getValue() {
-            return value;
-        }
-        public void setValue(V value) {
-            this.value = value;
-        }
     }
 
     private List<Pair<User, Float>> getUsersBalanceBySign(int sign) {
