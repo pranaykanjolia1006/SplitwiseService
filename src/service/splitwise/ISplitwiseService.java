@@ -1,7 +1,12 @@
-import java.util.List;
+package service.splitwise;
+
+import service.User.User;
+import service.splitwise.request.SplitBillRequest;
+import service.splitwise.response.SplitBillResponse;
+
 
 public interface ISplitwiseService {
-    void createSplitBill(User paidByUser, List<User> users, SplitType splitType, Float totalAmount, List<Float> amountSplit);
-    void getCompleteDebt();
-    void getDebtByUserId(User user);
+    SplitBillResponse splitBill(SplitBillRequest splitBillRequest);
+    void getAllTransactions();
+    void getTransactionsByUser(User user);
 }

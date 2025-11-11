@@ -1,3 +1,5 @@
+package service.User;
+
 public class User {
     
     private String username;

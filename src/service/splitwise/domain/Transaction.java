@@ -1,33 +1,40 @@
 package service.splitwise.domain;
 
-public class Debt {
+import service.User.User;
 
-    private User owesTo; // gives the money
-    private User owedTo; // get the money
-    private float amount;
+public class Transaction {
 
-    public Debt(User owesTo, User owedTo, float amount) {
-        this.owesTo = owesTo;
-        this.owedTo = owedTo;
+    private User fromUser; // gives the money
+    private User toUser; // get the money
+    private Double amount;
+
+    public Transaction(User toUser, User fromUser, Double amount) {
+        this.fromUser = fromUser;
+        this.toUser = toUser;
         this.amount = amount;
     }
-    public User getOwesTo() {
-        return owesTo;
+
+    public User getFromUser() {
+        return fromUser;
     }
-    public void setOwesTo(User owesTo) {
-        this.owesTo = owesTo;
+
+    public void setFromUser(User fromUser) {
+        this.fromUser = fromUser;
     }
-    public User getOwedTo() {
-        return owedTo;
+
+    public User getToUser() {
+        return toUser;
     }
-    public void setOwedTo(User owedTo) {
-        this.owedTo = owedTo;
+
+    public void setToUser(User toUser) {
+        this.toUser = toUser;
     }
-    public float getAmount() {
+
+    public Double getAmount() {
         return amount;
     }
-    public void setAmount(float amount) {
+
+    public void setAmount(Double amount) {
         this.amount = amount;
     }
-
 }
