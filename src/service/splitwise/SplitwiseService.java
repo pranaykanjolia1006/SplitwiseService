@@ -84,7 +84,7 @@ public class SplitwiseService implements ISplitwiseService {
                 currentPendingAmounts.put(fromUser, 0.0);
             }
             if (!currentPendingAmounts.containsKey(toUser)) {
-                currentPendingAmounts.put(fromUser, 0.0);
+                currentPendingAmounts.put(toUser, 0.0);
             }
 
             currentPendingAmounts.put(fromUser, currentPendingAmounts.get(fromUser) - transaction.getAmount());
@@ -101,7 +101,9 @@ public class SplitwiseService implements ISplitwiseService {
             if (!updatedPendingAmounts.containsKey(entry.getKey())) {
                 updatedPendingAmounts.put(entry.getKey(), entry.getValue());
             }
-            updatedPendingAmounts.put(entry.getKey(), newPendingAmounts.get(entry.getKey()) + entry.getValue());
+            if (newPendingAmounts.containsKey(entry.getKey())) {
+                updatedPendingAmounts.put(entry.getKey(), newPendingAmounts.get(entry.getKey()) + entry.getValue());
+            }
         }
 
         for(Map.Entry<User, Double> entry : newPendingAmounts.entrySet()) {
@@ -144,13 +146,12 @@ public class SplitwiseService implements ISplitwiseService {
             for (Map.Entry<User, Double> negEntry : negativePendingTransactionUsers.entrySet()) {
                 User negUser = negEntry.getKey();
                 Double negValue = negEntry.getValue();
-
                 Map<User, Double> updatedPositivePendingTransactionUsers = new HashMap<>(positivePendingTransactionUsers);
                 Map<User, Double> updatedNegativePendingTransactionUsers = new HashMap<>(negativePendingTransactionUsers);
                 UsersPendingTransactions updatedUsersPendingTransactions = new UsersPendingTransactions();
                 if (posValue > negValue) {
                     updatedNegativePendingTransactionUsers.remove(negUser);
-                    updatedNegativePendingTransactionUsers.put(posUser, posValue - negValue);
+                    updatedPositivePendingTransactionUsers.put(posUser, posValue - negValue);
                 } else if (negValue > posValue) {
                     updatedPositivePendingTransactionUsers.remove(posUser);
                     updatedNegativePendingTransactionUsers.put(negUser, negValue - posValue);
@@ -161,13 +162,13 @@ public class SplitwiseService implements ISplitwiseService {
                 updatedUsersPendingTransactions.setPositivePendingTransactionUsers(updatedPositivePendingTransactionUsers);
                 updatedUsersPendingTransactions.setNegativePendingTransactionUsers(updatedNegativePendingTransactionUsers);
 
-                List<Transaction> transactionsList = getSimplifiedBalanceList(updatedUsersPendingTransactions);
-                if (transactionsList == null) {
-                    transactionsList = new ArrayList<>();
+                List<Transaction> transactions = getSimplifiedBalanceList(updatedUsersPendingTransactions);
+                if (transactions == null) {
+                    transactions = new ArrayList<>();
                 }
-                transactionsList.add(new Transaction(posUser, negUser, Math.min(posValue, negValue)));
-                if (minTransactions == null || minTransactions.size() > transactionsList.size()) {
-                    minTransactions = transactionsList;
+                transactions.add(new Transaction(posUser, negUser, Math.min(posValue, negValue)));
+                if (minTransactions == null || minTransactions.size() > transactions.size()) {
+                    minTransactions = transactions;
                 }
             }
         }
