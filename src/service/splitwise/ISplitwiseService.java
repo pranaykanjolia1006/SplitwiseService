@@ -10,3 +10,7 @@ public interface ISplitwiseService {
     void getAllTransactions();
     void getTransactionsByUser(User user);
 }
+
+
+
+
